@@ -4,6 +4,7 @@
 # Shigaflow — Windows download manager
 
 This ZIP contains the complete Visual Studio source for Shigaflow, including the WPF application, Chrome/Edge browser extension, Native Messaging host, and Inno Setup 6 installer definition.
+The finished build are in installer Folder, already an exe File, feel free to use that, after installed, in setting, there How-to Tab, Follow it to add Browser Extension.
 
 ## Requirements
 
@@ -72,14 +73,6 @@ After installing, use **Connect Shigaflow to Chrome** from the Start Menu, or ru
 
 Browser file capture is restricted to the extension allowlist in Settings (for example, `zip, pdf, mp4`). Unlisted or unidentified extensions are rejected by the Native Messaging host and are not added to Shigaflow. The extension intercepts supported download-link clicks before the browser's normal download flow where possible. The `downloads.onCreated` listener remains a fallback; for downloads it cannot intercept in advance, the browser may still display its own download prompt. Some sites require browser cookies, authentication, or custom request headers and may not be transferable to Shigaflow.
 
-## Included feature stages
-
-- **Stage 1:** Spaced download rows, one always-visible Pause/Resume control, row-specific right-click actions, and Open File Location.
-- **Stage 2:** Bulk selection/deletion, Clear List with Yes/No/Cancel behavior, and protection for active/paused downloads.
-- **Stage 3:** Windows system tray, restore/open, Pause All, and Exit.
-- **Stage 4:** Chrome/Edge extension, Native Messaging integration, early link interception where supported, and single-instance protection.
-- **Stage 5:** How To tab with a width-fitted, vertically scrollable setup guide; Shigaflow application/installer/shortcut icon; and preserved About screen.
-
 ## Stage 6 — Build and packaging
 
 The project includes `publish.ps1`, `Build-Shigaflow-Installer.ps1`, and `Shigaflow-Setup.iss` for release packaging. The installer target remains Inno Setup 6 and the install location remains under Local AppData.
@@ -92,21 +85,3 @@ The project includes `publish.ps1`, `Build-Shigaflow-Installer.ps1`, and `Shigaf
 - If Chrome/Edge does not connect, confirm that the extension was loaded from the installed `%LOCALAPPDATA%\Shigaflow\BrowserExtension` folder, rerun the native-host registration, then fully restart the browser.
 - If Windows SmartScreen warns about the installer, note that this project is not code-signed.
 
-
-## Google Drive signed-in My Drive downloads
-
-Version 1.0.5 adds authenticated Google Drive handoff. Select a single file in My Drive and choose Download. The extension reads Google-domain cookies and passes them to the local Shigaflow app through native messaging. The app uses them only in a Google-domain-scoped cookie container for its metadata probe and download. Cookie values are not saved to settings or download history. Because this adds the Chrome `cookies` permission, approve the permission change when Chrome asks and reload the extension. Rebuild/reinstall the app and native host with `Install-BrowserIntegration.ps1` so the new cookie-aware native host and app are installed together.
-
-
-## Torrent support (initial implementation)
-
-Shigaflow now includes a separate Torrents workspace powered by libtorrent-rasterbar through the LibtorrentSharp native Windows binding. Use **Torrents** in the sidebar, then **Add Torrent** to select a `.torrent` file or paste a `magnet:` link. Choose a destination folder when prompted. Torrent state is stored separately under `%LOCALAPPDATA%\Shigaflow\Torrents\torrents.json`. Completed torrents remain active and seed until the user pauses or stops them. Paused/stopped torrents can be resumed from the Torrents list.
-
-The Windows build restores `LibtorrentSharp` and its bundled Windows x64 native engine during `dotnet publish`. The binding is currently an early-access alpha package. This source update has not been compiled or exercised on Windows in this environment; restore/build and test it on Windows before installing.
-
-
-## Google Drive bulk ZIP regression hardening (V10)
-
-The browser extension now merges Drive's selected-row and selected-checkbox accessibility states when counting selected file IDs. The native messaging host also normalizes requests explicitly marked `googleDriveBulk` to a `.zip` filename before extension allow-list validation, so a temporarily extensionless Drive archive cannot be rejected as an empty extension. The extension manifest version is `1.3.0`.
-
-This is a source package. Build and verify the Windows application/host and installer on Windows with the .NET SDK and Inno Setup before deploying; this package does not claim to contain a newly compiled or runtime-tested executable.

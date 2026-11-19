@@ -73,7 +73,7 @@ After installing, use **Connect Shigaflow to Chrome** from the Start Menu, or ru
 
 Browser file capture is restricted to the extension allowlist in Settings (for example, `zip, pdf, mp4`). Unlisted or unidentified extensions are rejected by the Native Messaging host and are not added to Shigaflow. The extension intercepts supported download-link clicks before the browser's normal download flow where possible. The `downloads.onCreated` listener remains a fallback; for downloads it cannot intercept in advance, the browser may still display its own download prompt. Some sites require browser cookies, authentication, or custom request headers and may not be transferable to Shigaflow.
 
-## Stage 6 — Build and packaging
+## Build and packaging
 
 The project includes `publish.ps1`, `Build-Shigaflow-Installer.ps1`, and `Shigaflow-Setup.iss` for release packaging. The installer target remains Inno Setup 6 and the install location remains under Local AppData.
 

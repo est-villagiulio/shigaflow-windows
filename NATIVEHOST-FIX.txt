@@ -1,6 +1,0 @@
-NATIVE HOST BUILD FIX
-
-Fixed three CS1012 errors in NativeHost/Program.cs. The extension separator list now uses valid C# escaped character literals: '\r', '\n', and '\t' (one character each), instead of '\\r', '\\n', and '\\t' (two characters each).
-
-Re-run from this folder in PowerShell:
-  powershell -ExecutionPolicy Bypass -File .\Build-Shigaflow-Installer.ps1

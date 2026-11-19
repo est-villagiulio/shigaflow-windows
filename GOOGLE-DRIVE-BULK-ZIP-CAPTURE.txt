@@ -1,9 +1,0 @@
-Google Drive capture follow-up (extension 1.1.0)
-
-The previous implementation tried to infer multi-file selection from Drive's DOM. When Drive changes its selected-row markup, Shigaflow can misclassify a server-generated ZIP as a single extensionless file, causing the empty-extension rejection.
-
-The updated content script arms a tab-scoped capture for every Drive Download menu action and allows Drive to create its actual download. The service worker then captures the resulting Google-hosted download even if Chrome initially reports no filename extension or generic MIME type. It marks the item as ZIP when multiple selected rows are detected, the filename/MIME indicates ZIP, or the temporary filename is extensionless.
-
-Chrome's download is cancelled only after Shigaflow's native host acknowledges the handoff. If the handoff fails, Chrome is allowed to continue its download.
-
-Validation: JavaScript syntax checks passed for capture_links.js and service_worker.js. Live Google Drive / Chrome / Windows build testing is still required.

@@ -1,9 +1,0 @@
-HOW-TO TAB IMAGE FIX
-
-The How To tab referenced Assets/how-to.jpg, but the image was not included as a WPF Resource in Shigaflow.csproj. This meant the pack URI could not load it in the built app.
-
-Fix: Added <Resource Include="Assets\how-to.jpg" /> to the project.
-
-The existing ScrollViewer and Image settings are retained: the image width follows the available viewport width, Stretch="Uniform" preserves its aspect ratio, horizontal scrolling is disabled, and vertical scrolling remains enabled. The supplied 663x2048 image is therefore shown full-width and can be scrolled vertically.
-
-Rebuild the app in Visual Studio (Release > Rebuild Solution) and republish/reinstall the application. If using an installer, rebuild the installer too.

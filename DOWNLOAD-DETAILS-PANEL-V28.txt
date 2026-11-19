@@ -1,0 +1,18 @@
+Shigaflow v28 — details panel for the Downloads page
+
+- Left-click a download row to open a panel docked at the bottom of the Downloads page (same
+  behaviour as the Torrents panel): the list shrinks above it, clicking another row switches it,
+  close with the X button or Esc, right-click keeps its menu, and checkboxes / the Pause-Resume
+  button / column headers / scrollbars do not open it. It updates live and closes itself if the
+  download is removed. Row clicks do not open it while Select mode is active.
+- One long progress bar at the top. While a multi-connection download runs it is split into one bar
+  per parallel part (like the Status column); when the download completes it becomes one single full
+  bar. The status text on it uses the same colour/size as the Status column.
+- TRANSFER: status, downloaded, download speed, time remaining, progress.
+  FILE: total size, added on [HH:mm, dd/MM/yyyy], connections, resume support.
+  GENERAL: save path, URL, info message.
+- Time remaining is calculated from the current speed and the remaining bytes (shown only while downloading).
+- The three label/value styles used by the panels moved to the window resources so both panels share them.
+
+Files changed: Shigaflow/MainWindow.xaml, MainWindow.xaml.cs, DownloadItem.cs
+Not compiled/tested here (no Windows/.NET SDK).

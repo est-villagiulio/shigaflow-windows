@@ -1,0 +1,12 @@
+Shigaflow v19 — Downloads table alignment + header sorting
+
+- Row text is now aligned with the header text. WPF's default cell template ignores padding,
+  so the Downloads cells use their own template with the same 12px inset as the headers.
+- Clicking a column header sorts the Downloads list (click again to reverse), with the sort arrow
+  shown on the header, like the Torrents table. Sortable: NAME, STATUS, RESUME, SIZE, SPEED, ADDED.
+  The button column does not sort. ADDED (newest first) is the starting sort.
+- The Sort dropdown and arrow button still work and stay in sync with the header you clicked
+  (Progress and Downloaded size remain available from the dropdown only).
+
+Files changed: MainWindow.xaml, MainWindow.xaml.cs
+Not compiled/tested here (no Windows/.NET SDK).

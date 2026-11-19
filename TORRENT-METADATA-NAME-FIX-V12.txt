@@ -1,0 +1,15 @@
+Shigaflow v12 - Magnet metadata name resolution
+
+Problem addressed:
+- Magnet torrents were left with the generic "Magnet torrent" label after the v11 identity fix.
+- LibtorrentSharp 0.1.0-alpha TorrentStatus does not expose a Name property, so the previous reflection-based metadata lookup could not resolve the magnet's real name.
+
+Changes:
+- Resolve magnet torrent names from MagnetHandle.GetFiles(), which exposes the metadata-backed file list for that specific magnet handle after metadata arrives.
+- Derive the display/open target from that torrent's own metadata paths: a shared top-level folder for multi-file torrents, or the full filename (including extension) for single-file torrents.
+- Keep the directory-scanning fallback as a last resort only; the caller continues to disable it when another torrent shares the destination folder.
+- No changes to browser integration, normal HTTP downloads, or the existing torrent identity protection.
+
+Validation:
+- Source-level inspection against the LibtorrentSharp API surface and ZIP integrity check only.
+- Not compiled or runtime-tested on Windows in this environment. Build and test in Visual Studio before replacing the working installation.

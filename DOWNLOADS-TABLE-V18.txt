@@ -1,0 +1,20 @@
+Shigaflow v18 — Downloads table restyled like the Torrents table
+(Torrent section untouched.)
+
+- The Downloads list is now a DataGrid (same structure/styling as the Torrents table).
+- Every column can be dragged wider/narrower; widths are saved on exit and restored on next start.
+- Columns: NAME | STATUS | RESUME | SIZE | SPEED | ADDED | (Pause/Resume button)
+  * NAME      - file name only (hover to see the URL). Bulk-select checkbox stays on the left.
+  * STATUS    - thick bar with the status text and percentage drawn on it ("Downloading · 42%").
+                Multi-connection downloads show one bar per parallel part, side by side.
+                When the download completes the bar becomes one single full bar ("Complete").
+                Hover the bar to see the detail line (bytes done / error message).
+  * RESUME / SIZE / SPEED - same values and default widths as before.
+  * ADDED     - replaces the old PROGRESS column. Format: HH:mm, dd/MM/yyyy (e.g. 14:35, 16/11/2026).
+  * Button column unchanged.
+- Right-click menu is unchanged (Pause/Resume, Cancel, Remove, Change URL, Open File, Open File Location).
+  It is now built when opened, so Pause/Resume always matches the current state.
+- Header-click sorting is off for this table; use the existing Sort dropdown + arrow button above it.
+
+Files changed: MainWindow.xaml, MainWindow.xaml.cs, DownloadItem.cs, AppSettings.cs
+Not compiled/tested here (no Windows/.NET SDK). Build in Visual Studio and report any errors.

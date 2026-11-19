@@ -1,0 +1,12 @@
+Shigaflow v27 — torrent right-click menu acted on the wrong torrent
+
+Problem: the Torrents table gives every row the same ContextMenu object, and the menu was only
+filled the first time it opened. Every later right-click reused the first torrent's menu items, so
+"Open File" opened the first torrent's file for every torrent. Pause/Resume, Stop, Open Download
+Folder and Remove Torrent had the same problem and acted on that first torrent.
+
+Fix: the menu is now rebuilt for the right-clicked torrent every time it opens (the Downloads table
+already worked this way). Pause/Resume text and icon are also always current.
+
+Files changed: Shigaflow/MainWindow.xaml.cs
+Not compiled/tested here (no Windows/.NET SDK).

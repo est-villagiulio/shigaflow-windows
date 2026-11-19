@@ -1,0 +1,13 @@
+STARTUP / VISUAL STUDIO FIX
+
+The app already uses a single-instance mutex. Previously, launching a second copy (for example from Visual Studio while the app was minimized to the tray) caused the new process to exit silently. The existing copy was not brought to the foreground.
+
+This update adds a named Windows event. A second launch signals the existing process, and the existing process restores its main window from the tray.
+
+In Visual Studio:
+1. In Solution Explorer, right-click the Shigaflow project (not Shigaflow.NativeHost).
+2. Choose Set as Startup Project.
+3. Select Debug / Any CPU and press F5 (Start Debugging), or Ctrl+F5 (Start Without Debugging).
+4. If an older Shigaflow process is still running, the new launch should now bring that window forward.
+
+Build succeeded in the user's log. CS4014 is a warning about an unawaited task and does not prevent the application from starting.

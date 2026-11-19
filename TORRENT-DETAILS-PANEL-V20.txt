@@ -1,0 +1,21 @@
+Shigaflow v20 — Torrent details panel + Torrents list alignment
+
+Details panel
+- Left-click a torrent row to open a panel docked at the bottom of the Torrents page.
+  The list shrinks above it, so you can keep clicking other torrents to switch the panel.
+- Close with the X button (top-right of the panel) or the Esc key. Closing also clears the row selection.
+- Right-click is unchanged (same context menu) and does not open the panel.
+- Clicks on checkboxes, column headers (sort / resize) and scrollbars do not open it.
+  While Select mode is active, row clicks do not open it either.
+- The panel updates live once per second and closes itself if the torrent is removed.
+- Shows: progress bar with status text; Transfer (status, downloaded, download speed, time remaining,
+  progress); Sharing (uploaded, upload speed, share ratio, peers, seeds); General (save path,
+  total size, added on [HH:mm, dd/MM/yyyy], source, info message).
+- Seeds and Uploaded (and therefore Share ratio) are read from the torrent engine only if the
+  LibtorrentSharp 0.1.0-alpha build exposes them; otherwise they show "—".
+
+Torrents list
+- Row text is aligned with the header text (same fix as the Downloads table).
+
+Files changed: MainWindow.xaml, MainWindow.xaml.cs, TorrentItem.cs
+Not compiled/tested here (no Windows/.NET SDK).

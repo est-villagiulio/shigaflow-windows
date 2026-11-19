@@ -1,0 +1,14 @@
+SHIGAFLOW WINDOWS UI AND TORRENT NAME UPDATE
+
+Changes in this update:
+- Torrent action buttons now use the same prominent Pause/Resume treatment as the Downloads tab, with Stop and More actions retained.
+- Added a right-click context menu to each torrent row with Pause/Resume, Stop, Open Download Folder, and Remove Torrent.
+- The More button opens the same set of torrent actions.
+- Added shared theme-aware WPF ContextMenu, MenuItem, and Separator templates in App.xaml. This fixes the mixed light/dark appearance in the Downloads context menu and applies the same styling to torrent menus.
+- Removed the Downloads context menu's local MenuItem style so both pages use the shared theme style.
+- The torrent list now reads the live libtorrent TorrentStatus.Name on each refresh. Once magnet metadata is available, the placeholder "Magnet torrent" label is replaced with the actual torrent name and the updated name is persisted to history.
+
+The libtorrent engine and package reference are unchanged by this UI update.
+
+BUILD NOTE
+The source was checked for XML well-formedness and edited consistently with the existing WPF event handlers. This environment does not have the .NET SDK, so a Windows compile/run test could not be performed here. Please build and test the ZIP on Windows.

@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Shigaflow Browser Integration",
+  "version": "1.5.0",
+  "description": "Intercept supported download links, including authenticated Google Drive downloads, before Chrome starts a download.",
+  "permissions": [
+    "downloads",
+    "cookies",
+    "nativeMessaging",
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "Shigaflow integration"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "capture_links.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

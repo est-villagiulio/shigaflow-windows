@@ -1,0 +1,8 @@
+Shigaflow v17 — Torrent selection and removal fix
+
+- Torrent checkboxes are now enabled for every torrent state, including active downloads and metadata retrieval.
+- Selecting an active torrent and deleting it detaches it from the torrent engine before removing the list entry.
+- Context-menu removal resets bulk-selection mode and refreshes the saved torrent history and summary.
+- Choosing Yes in the context menu continues to delete the torrent's content under its selected save folder; choosing No keeps the files.
+
+Build with Visual Studio using the solution/project included in this archive.

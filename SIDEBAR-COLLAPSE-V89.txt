@@ -1,0 +1,21 @@
+v89 — collapsible sidebar (icon strip, like Windows 11 Task Manager)
+
+- New ☰ button at the top of the sidebar collapses it to a narrow icon strip (64px) and expands it again.
+  Ctrl+B does the same. The width slides over ~0.2s. The choice is remembered between launches.
+- Collapsed layout:
+    * small logo, no app name / tagline
+    * Downloads icon, with the open section's category icons stacked underneath, smaller
+    * stylised T icon for Torrents (a T whose stem ends in a download arrow), with its category icons underneath
+    * Settings icon at the bottom
+  Every icon has a tooltip with its name. The +/- markers are hidden.
+- The accordion still applies in the strip: clicking the T icon collapses the Downloads category icons
+  and opens the Torrents ones (and the other way round). Clicking the icon of the section you are on
+  toggles its category icons.
+- Icons: Downloads uses the Windows download glyph, Settings the Windows settings glyph, Torrents the new T icon
+  (same icons are used in the expanded sidebar).
+- Downloads and Torrents tables: the Name column is no longer saved/restored as a fixed pixel width, so it
+  stays flexible and the tables fill the extra width when the sidebar collapses (or the window is maximised).
+  Other column widths are still saved and restored.
+
+Files changed: Shigaflow/MainWindow.xaml, MainWindow.xaml.cs, AppSettings.cs
+Not compiled/tested here (no Windows/.NET SDK).

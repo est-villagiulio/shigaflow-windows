@@ -1,0 +1,6 @@
+Shigaflow Torrents Table QOL v13 XAML compile fix
+
+Fixes MC6007 reported for TorrentPauseResume_Click being interpreted as a Click event on DataGridTemplateColumn.
+Torrent row context menu items are now created in code when the context menu opens, and their existing code-behind handlers are attached at runtime. No torrent behavior or table layout is intentionally changed.
+
+Based on Shigaflow-Torrents-Table-QOL-v13.zip.

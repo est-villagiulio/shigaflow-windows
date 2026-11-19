@@ -1,0 +1,727 @@
+<Window x:Class="Shigaflow.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Shigaflow" Height="800" Width="1360" MinHeight="650" MinWidth="1120"
+        Background="{DynamicResource BgBrush}" Foreground="{DynamicResource TextBrush}"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Compact, modern sidebar category navigation -->
+        <Style x:Key="SidebarCategoryButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Margin" Value="0,1,0,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CategorySurface" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CategorySurface" Property="Background" Value="{DynamicResource SelectedBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CategorySurface" Property="Opacity" Value="0.78"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Shared by the Downloads and Torrents details panels -->
+                    <Style x:Key="TorrentInfoLabel" TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                    <Style x:Key="TorrentInfoValue" TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                    </Style>
+                    <Style x:Key="TorrentInfoHeading" TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                        <Setter Property="FontSize" Value="10"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Margin" Value="0,0,0,6"/>
+                    </Style>
+    </Window.Resources>
+    <Grid Margin="18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Persistent sidebar navigation -->
+        <Border x:Name="SidebarBorder" Grid.Column="0" Width="190" ClipToBounds="True" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1" CornerRadius="14" Padding="12" Margin="0,0,16,0">
+            <DockPanel LastChildFill="True">
+                <!-- Hamburger: collapses the sidebar to an icon strip and expands it again (Ctrl+B). -->
+                <Button x:Name="SidebarToggleButton" DockPanel.Dock="Top" Content="&#xE700;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                        Width="38" Height="36" MinWidth="38" Padding="0" Margin="0,0,0,8" HorizontalAlignment="Left"
+                        ToolTip="Collapse sidebar (Ctrl+B)" Click="ToggleSidebar_Click"/>
+                <StackPanel x:Name="SidebarHeaderPanel" DockPanel.Dock="Top" Margin="4,5,4,24" HorizontalAlignment="Center">
+                    <Image x:Name="SidebarLogo" Source="/Shigaflow;component/Assets/shigaflow-logo.png" Height="96" Width="96" HorizontalAlignment="Center" Stretch="Uniform"/>
+                    <TextBlock x:Name="SidebarAppName" Text="Shigaflow" FontSize="20" FontWeight="Bold" Margin="0,10,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    <TextBlock x:Name="SidebarTagline" Text="weebs at it finest!" Foreground="{DynamicResource MutedBrush}" FontSize="10" Margin="0,2,0,0" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+                <!-- Settings is declared before the scrolling nav so it always keeps its place at the bottom. -->
+                <Button x:Name="SettingsButton" DockPanel.Dock="Bottom" Padding="13,11" Margin="0,8,0,0" Click="Settings_Click">
+                    <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Settings" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    </Grid>
+                </Button>
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                <StackPanel>
+                    <Button x:Name="DownloadsNavButton" Padding="10,10" Margin="0,0,0,3" Click="ShowDownloads_Click" Background="{DynamicResource SelectedBrush}" BorderBrush="{DynamicResource StrokeBrush}">
+                        <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/><TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Downloads" VerticalAlignment="Center" HorizontalAlignment="Left"/><TextBlock Tag="SidebarLabel" x:Name="DownloadsExpandGlyph" Grid.Column="2" Text="+" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+                    <Border x:Name="DownloadsCategories" Visibility="Collapsed" Background="{DynamicResource PanelAltBrush}" CornerRadius="9" Padding="5" Margin="10,2,0,10">
+    <StackPanel>
+        <Button Tag="All" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="All" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Programs" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Programs" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Video" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE714;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Video" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Audio" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Audio" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Document" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Document" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Images" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xEB9F;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Images" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Uncategorized" Click="DownloadCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Uncategorized" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+    </StackPanel>
+</Border>
+                    <Button x:Name="TorrentsNavButton" Padding="10,10" Margin="0,0,0,3" Click="ShowTorrents_Click">
+                        <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/></Grid.ColumnDefinitions>
+                            <Path Data="M2,2 H18 V5.5 H2 Z M8.25,5.5 H11.75 V10.5 H15.5 L10,17.5 L4.5,10.5 H8.25 Z" Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Left"/><TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Torrents" VerticalAlignment="Center" HorizontalAlignment="Left"/><TextBlock Tag="SidebarLabel" x:Name="TorrentsExpandGlyph" Grid.Column="2" Text="+" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+                    <Border x:Name="TorrentsCategories" Visibility="Collapsed" Background="{DynamicResource PanelAltBrush}" CornerRadius="9" Padding="5" Margin="10,2,0,10">
+    <StackPanel>
+        <Button Tag="All" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="All" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Programs" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Programs" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Video" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE714;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Video" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Audio" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Audio" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Document" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Document" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Images" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xEB9F;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Images" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+        <Button Tag="Uncategorized" Click="TorrentCategory_Click" Style="{StaticResource SidebarCategoryButtonStyle}">
+            <Grid Tag="SidebarRow"><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <TextBlock Tag="SidebarLabel" Grid.Column="1" Text="Uncategorized" VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+    </StackPanel>
+</Border>
+                </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1">
+        <Grid x:Name="DownloadsPage">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="File Download" FontSize="25" FontWeight="Bold" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="YOUR DOWNLOADS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                <Border Background="{DynamicResource PanelAltBrush}" CornerRadius="6" Padding="8,3" Margin="10,0,0,0">
+                    <TextBlock x:Name="CountText" Text="0 items" FontSize="10" Foreground="{DynamicResource MutedBrush}"/>
+                </Border>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="AddDownloadButton" Click="AddDownload_Click" MinWidth="82" Height="36" Padding="13,8" Margin="0,0,8,0"
+                        ToolTip="Add a new download" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
+                        Foreground="{DynamicResource AccentTextBrush}" FontWeight="Bold">
+                    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="+" FontFamily="Segoe UI Symbol" FontSize="15" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,5,0" LineHeight="16"/>
+                        <TextBlock Grid.Column="1" Text="Add" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button x:Name="SelectDeleteButton" Content="Select" Click="SelectDeleteButton_Click"
+                        MinWidth="82" Height="36" Margin="0,0,8,0" ToolTip="Select completed or stopped downloads"/>
+                <Button x:Name="ClearListButton" Content="Clear List" Click="ClearListButton_Click"
+                        MinWidth="82" Margin="0,0,14,0" ToolTip="Clear eligible downloads from the list"/>
+                <TextBlock Text="Sort" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                <ComboBox x:Name="SortBox" Width="145" Margin="0,0,8,0" SelectedIndex="0" SelectionChanged="SortBox_SelectionChanged">
+                    <ComboBoxItem Content="Date added"/><ComboBoxItem Content="Name"/><ComboBoxItem Content="Downloaded size"/><ComboBoxItem Content="Total size"/><ComboBoxItem Content="Progress"/><ComboBoxItem Content="Status"/>
+                </ComboBox>
+                <Button x:Name="SortDirectionButton" Click="SortDirection_Click" Margin="0" ToolTip="Toggle ascending/descending">↓</Button>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1" CornerRadius="14">
+            <Grid>
+                <DataGrid x:Name="DownloadsList" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                          CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"
+                          HeadersVisibility="Column" GridLinesVisibility="None" RowHeaderWidth="0"
+                          Background="Transparent" Foreground="{DynamicResource TextBrush}"
+                          BorderThickness="0" SelectionMode="Single" SelectionUnit="FullRow"
+                          HorizontalGridLinesBrush="{DynamicResource StrokeBrush}"
+                          VerticalGridLinesBrush="Transparent" ColumnHeaderHeight="42"
+                          RowHeight="60" AlternationCount="1" Sorting="DownloadsGrid_Sorting"
+                          PreviewMouseLeftButtonUp="DownloadsList_PreviewMouseLeftButtonUp"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Resources>
+                        <!-- Same pattern as the Torrents table: keep the themed ContextMenu template (BasedOn)
+                             and build the row menu in code when it opens. -->
+                        <Style TargetType="ContextMenu" BasedOn="{StaticResource {x:Type ContextMenu}}">
+                            <EventSetter Event="Opened" Handler="DownloadRowContextMenu_Opened"/>
+                        </Style>
+                        <Style x:Key="DownloadCenteredCellTextStyle" TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="FontSize" Value="11"/>
+                        </Style>
+                        <Style x:Key="DownloadResumeCellTextStyle" TargetType="TextBlock" BasedOn="{StaticResource DownloadCenteredCellTextStyle}">
+                            <Setter Property="Foreground" Value="{DynamicResource WarnBrush}"/>
+                        </Style>
+                        <Style x:Key="DownloadSpeedCellTextStyle" TargetType="TextBlock" BasedOn="{StaticResource DownloadCenteredCellTextStyle}">
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                        </Style>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="{DynamicResource HeaderBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                            <Setter Property="FontSize" Value="10"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Padding" Value="12,0"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource StrokeBrush}"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="12,4"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                            <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource StrokeBrush}"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu Placement="MousePoint" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource HoverBrush}"/></Trigger>
+                                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource SelectedBrush}"/></Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <!-- NAME -->
+                        <DataGridTemplateColumn Header="NAME" SortMemberPath="Name" Width="2.3*" MinWidth="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"
+                                                  IsChecked="{Binding IsBulkSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  Visibility="{Binding ShowBulkCheckbox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                  IsEnabled="{Binding IsBulkSelectable}" ToolTip="Select this download"
+                                                  Click="BulkSelectionCheckBox_Click"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- STATUS: thick bar with text on it. One bar per parallel part while downloading,
+                             a single full bar once the download is complete. -->
+                        <DataGridTemplateColumn Header="STATUS" SortMemberPath="Status" Width="230" MinWidth="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid Height="30" VerticalAlignment="Center" HorizontalAlignment="Stretch" ToolTip="{Binding Detail}">
+                                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}"
+                                                     Background="{DynamicResource TrackBrush}"
+                                                     Foreground="{DynamicResource AccentBrush}"
+                                                     BorderThickness="0" Height="30" VerticalAlignment="Stretch"
+                                                     Visibility="{Binding ShowSingleBar, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        <ItemsControl ItemsSource="{Binding Segments}" Margin="0,0,-2,0"
+                                                      Visibility="{Binding ShowSegments, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" Height="30"
+                                                                 Margin="0,0,2,0"
+                                                                 Background="{DynamicResource TrackBrush}"
+                                                                 Foreground="{DynamicResource AccentBrush}"
+                                                                 BorderThickness="0"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock Text="{Binding StatusBarText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextBrush}"
+                                                   TextTrimming="CharacterEllipsis" Margin="6,0" IsHitTestVisible="False"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- RESUME / SIZE / SPEED: unchanged values and widths -->
+                        <DataGridTextColumn Header="RESUME" Binding="{Binding Resume}" SortMemberPath="Resume" Width="72" MinWidth="60" ElementStyle="{StaticResource DownloadResumeCellTextStyle}"/>
+                        <DataGridTextColumn Header="SIZE" Binding="{Binding TotalSizeText}" SortMemberPath="TotalBytesSort" Width="90" MinWidth="70" ElementStyle="{StaticResource DownloadCenteredCellTextStyle}"/>
+                        <DataGridTextColumn Header="SPEED" Binding="{Binding Speed}" SortMemberPath="Speed" Width="90" MinWidth="70" ElementStyle="{StaticResource DownloadSpeedCellTextStyle}"/>
+
+                        <!-- ADDED: replaces the old PROGRESS column; HH:mm, dd/MM/yyyy -->
+                        <DataGridTextColumn Header="ADDED" Binding="{Binding AddedDateText}" SortMemberPath="DateAdded" SortDirection="Descending" Width="140" MinWidth="120" ElementStyle="{StaticResource DownloadCenteredCellTextStyle}"/>
+
+                        <!-- Pause / Resume button (unchanged) -->
+                        <DataGridTemplateColumn Header="" Width="150" MinWidth="150" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding PauseResumeLabel}" MinHeight="36" MinWidth="124"
+                                            HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+                                            Background="#21483F" BorderBrush="#367D6C" Foreground="#9EF0D9"
+                                            Click="TogglePauseResumeItem_Click" Tag="{Binding}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <StackPanel x:Name="EmptyState" Margin="0,42,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False">
+                    <Border Width="54" Height="54" CornerRadius="16" Background="{DynamicResource PanelAltBrush}" HorizontalAlignment="Center">
+                        <TextBlock Text="↓" FontSize="30" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Nothing downloading yet" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,5"/>
+                    <TextBlock Text="Click + to add your first download." Foreground="{DynamicResource MutedBrush}" FontSize="12" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Docked download details panel: opens on left-click of a download row, closed with the X button or Esc. -->
+        <Border x:Name="DownloadDetailsPanel" Grid.Row="3" Visibility="Collapsed" Height="250" Margin="0,10,0,0"
+                Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1" CornerRadius="14">
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <Border Background="{DynamicResource HeaderBrush}" CornerRadius="14,14,0,0" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="0,0,0,1">
+                    <Grid Margin="16,0,8,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="DOWNLOAD DETAILS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Margin="16,0" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                        <Button Grid.Column="2" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="12" Width="32" Height="30" MinWidth="32" Padding="0"
+                                VerticalAlignment="Center" ToolTip="Close (Esc)" Click="CloseDownloadDetails_Click"/>
+                    </Grid>
+                </Border>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="16,12,16,12">
+                        <!-- One long bar. While a multi-connection download runs it is split into one bar per parallel part;
+                             when the download is complete it becomes a single full bar. -->
+                        <Grid Height="22" Margin="0,0,0,12">
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" Height="22"
+                                         Background="{DynamicResource TrackBrush}" Foreground="{DynamicResource AccentBrush}" BorderThickness="0"
+                                         Visibility="{Binding ShowSingleBar, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <ItemsControl ItemsSource="{Binding Segments}" Margin="0,0,-2,0"
+                                          Visibility="{Binding ShowSegments, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" Height="22" Margin="0,0,2,0"
+                                                     Background="{DynamicResource TrackBrush}" Foreground="{DynamicResource AccentBrush}" BorderThickness="0"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding StatusBarText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextBrush}" IsHitTestVisible="False"/>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="1.4*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Transfer -->
+                            <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                <TextBlock Text="TRANSFER" Style="{StaticResource TorrentInfoHeading}"/>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Status" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Downloaded" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding DownloadedText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Download speed" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Speed}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Time remaining" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding EtaText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Progress" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                            </StackPanel>
+
+                            <!-- File -->
+                            <StackPanel Grid.Column="1" Margin="0,0,24,0">
+                                <TextBlock Text="FILE" Style="{StaticResource TorrentInfoHeading}"/>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Total size" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding TotalSizeText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Added on" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding AddedDateText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Connections" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding ConnectionsText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Resume support" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Resume}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                            </StackPanel>
+
+                            <!-- General -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="GENERAL" Style="{StaticResource TorrentInfoHeading}"/>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Save as" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding DestinationPath}" ToolTip="{Binding DestinationPath}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="URL" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Url}" ToolTip="{Binding Url}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Info" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Detail}" ToolTip="{Binding Detail}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <DockPanel Grid.Row="4" Margin="2,14,2,0">
+            <TextBlock Text="SHIGAFLOW  •  HTTP / HTTPS" Foreground="{DynamicResource MutedBrush}" FontSize="10" DockPanel.Dock="Left"/>
+            <TextBlock Text="Segmented mode works only when the server supports byte ranges." Foreground="{DynamicResource MutedBrush}" FontSize="10" DockPanel.Dock="Right"/>
+        </DockPanel>
+        </Grid>
+
+        <!-- Dedicated torrent workspace; kept separate from HTTP/HTTPS downloads. -->
+        <Grid x:Name="TorrentsPage" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,6">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="Torrents" FontSize="25" FontWeight="Bold" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="YOUR TORRENTS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                    <Border Background="{DynamicResource PanelAltBrush}" CornerRadius="6" Padding="8,3" Margin="10,0,0,0"><TextBlock x:Name="TorrentCountText" Text="0 torrents" FontSize="10" Foreground="{DynamicResource MutedBrush}"/></Border>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="AddTorrentButton" Click="AddTorrent_Click" MinWidth="82" Height="36" Padding="13,8" Margin="0,0,8,0"
+                            ToolTip="Add a torrent" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
+                            Foreground="{DynamicResource AccentTextBrush}" FontWeight="Bold">
+                        <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="+" FontFamily="Segoe UI Symbol" FontSize="15" FontWeight="Bold"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,5,0" LineHeight="16"/>
+                            <TextBlock Grid.Column="1" Text="Add" FontSize="12" FontWeight="SemiBold"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+                    <Button x:Name="TorrentSelectButton" Content="Select" Click="TorrentSelectButton_Click" MinWidth="82" Height="36" Margin="0,0,8,0" ToolTip="Select completed, paused, or stopped torrents"/>
+                    <Button x:Name="TorrentClearListButton" Content="Clear List" Click="TorrentClearListButton_Click" MinWidth="82" Margin="0,0,14,0" ToolTip="Clear eligible torrents from the list"/>
+                </StackPanel>
+            </Grid>
+            <Border Grid.Row="2" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1" CornerRadius="14">
+                <Grid>
+                    <DataGrid x:Name="TorrentsList" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                              CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True"
+                              HeadersVisibility="Column" GridLinesVisibility="None" RowHeaderWidth="0"
+                              Background="Transparent" Foreground="{DynamicResource TextBrush}"
+                              BorderThickness="0" SelectionMode="Single" SelectionUnit="FullRow"
+                              HorizontalGridLinesBrush="{DynamicResource StrokeBrush}"
+                              VerticalGridLinesBrush="Transparent" ColumnHeaderHeight="42"
+                              RowHeight="66" AlternationCount="1" Sorting="TorrentsGrid_Sorting"
+                              PreviewMouseLeftButtonUp="TorrentsList_PreviewMouseLeftButtonUp"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <DataGrid.Resources>
+                            <!-- Preserve the application's themed ContextMenu template while adding the row handler.
+                                 Without BasedOn this implicit style replaces the custom menu template and causes
+                                 the blank-white-until-hover rendering reported by the user. -->
+                            <Style TargetType="ContextMenu" BasedOn="{StaticResource {x:Type ContextMenu}}">
+                                <EventSetter Event="Opened" Handler="TorrentRowContextMenu_Opened"/>
+                            </Style>
+                            <Style x:Key="TorrentCenteredCellTextStyle" TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            </Style>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="{DynamicResource HeaderBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                                <Setter Property="FontSize" Value="10"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="12,0"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource StrokeBrush}"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="12,4"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                                <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource StrokeBrush}"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu Placement="MousePoint" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource HoverBrush}"/></Trigger>
+                                    <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource SelectedBrush}"/></Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="NAME" SortMemberPath="Name" Width="2.3*" MinWidth="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid VerticalAlignment="Center">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                            <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,2,10,0"
+                                                      IsChecked="{Binding IsBulkSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Visibility="{Binding ShowBulkCheckbox, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                      IsEnabled="{Binding IsBulkSelectable}" ToolTip="Select this torrent"
+                                                      Click="TorrentBulkSelectionCheckBox_Click"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="STATUS" SortMemberPath="Status" Width="260" MinWidth="230">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                                            <Grid Width="220" Height="30" HorizontalAlignment="Left">
+                                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}"
+                                                             Background="{DynamicResource TrackBrush}"
+                                                             Foreground="{DynamicResource AccentBrush}"
+                                                             BorderThickness="0" Height="30" VerticalAlignment="Stretch"/>
+                                                <TextBlock Text="{Binding StatusBarText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextBrush}"
+                                                           TextTrimming="CharacterEllipsis" Margin="6,0" ToolTip="{Binding StatusBarText}"/>
+                                            </Grid>
+
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="SIZE" Binding="{Binding SizeText}" SortMemberPath="Size" Width="95" MinWidth="75" ElementStyle="{StaticResource TorrentCenteredCellTextStyle}"/>
+                            <DataGridTextColumn Header="DOWNLOAD" Binding="{Binding DownloadSpeedText}" SortMemberPath="DownloadSpeed" Width="105" MinWidth="85" ElementStyle="{StaticResource TorrentCenteredCellTextStyle}"/>
+                            <DataGridTextColumn Header="UPLOAD" Binding="{Binding UploadSpeedText}" SortMemberPath="UploadSpeed" Width="100" MinWidth="80" ElementStyle="{StaticResource TorrentCenteredCellTextStyle}"/>
+                            <DataGridTextColumn Header="ADDED" Binding="{Binding AddedDateText}" SortMemberPath="AddedAt" Width="115" MinWidth="95" ElementStyle="{StaticResource TorrentCenteredCellTextStyle}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel x:Name="TorrentsEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False">
+                        <Border Width="54" Height="54" CornerRadius="16" Background="{DynamicResource PanelAltBrush}" HorizontalAlignment="Center"><TextBlock Text="⇩" FontSize="30" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                        <TextBlock Text="No torrents added yet" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,5"/>
+                        <TextBlock Text="Add a .torrent file or paste a magnet link to get started." Foreground="{DynamicResource MutedBrush}" FontSize="12" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <!-- Docked torrent details panel: opens on left-click of a torrent row, closed with the X button or Esc. -->
+            <Border x:Name="TorrentDetailsPanel" Grid.Row="3" Visibility="Collapsed" Height="250" Margin="0,10,0,0"
+                    Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="1" CornerRadius="14">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Border Background="{DynamicResource HeaderBrush}" CornerRadius="14,14,0,0" BorderBrush="{DynamicResource StrokeBrush}" BorderThickness="0,0,0,1">
+                        <Grid Margin="16,0,8,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="TORRENT DETAILS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Margin="16,0" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                            <Button Grid.Column="2" Content="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="12" Width="32" Height="30" MinWidth="32" Padding="0"
+                                    VerticalAlignment="Center" ToolTip="Close (Esc)" Click="CloseTorrentDetails_Click"/>
+                        </Grid>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="16,12,16,12">
+                            <Grid Height="22" Margin="0,0,0,12">
+                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress, Mode=OneWay}" Height="22"
+                                             Background="{DynamicResource TrackBrush}" Foreground="{DynamicResource AccentBrush}" BorderThickness="0"/>
+                                <TextBlock Text="{Binding StatusBarText}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextBrush}"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="1.4*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Transfer -->
+                                <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                    <TextBlock Text="TRANSFER" Style="{StaticResource TorrentInfoHeading}"/>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Status" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Status}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Downloaded" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding DownloadedText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Download speed" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding DownloadSpeedText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Time remaining" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding EtaText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Progress" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                </StackPanel>
+
+                                <!-- Sharing -->
+                                <StackPanel Grid.Column="1" Margin="0,0,24,0">
+                                    <TextBlock Text="SHARING" Style="{StaticResource TorrentInfoHeading}"/>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Uploaded" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding UploadedText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Upload speed" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding UploadSpeedText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Share ratio" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding RatioText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Peers" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding PeersText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Seeds" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding SeedsText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                </StackPanel>
+
+                                <!-- General -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="GENERAL" Style="{StaticResource TorrentInfoHeading}"/>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Save as" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding SavePath}" ToolTip="{Binding SavePath}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Total size" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding SizeText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Added on" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding AddedFullText}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid Margin="0,0,0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Source" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding SourceTypeText}" ToolTip="{Binding Source}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Info" Style="{StaticResource TorrentInfoLabel}"/><TextBlock Grid.Column="1" Text="{Binding Detail}" ToolTip="{Binding Detail}" Style="{StaticResource TorrentInfoValue}"/></Grid>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            <DockPanel Grid.Row="4" Margin="2,14,2,0"><TextBlock Text="SHIGAFLOW  •  BITTORRENT" Foreground="{DynamicResource MutedBrush}" FontSize="10"/></DockPanel>
+        </Grid>
+        </Grid>
+    </Grid>
+</Window>

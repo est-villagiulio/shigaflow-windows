@@ -1,0 +1,34 @@
+Shigaflow v22 — complete rename from the old internal name to Shigaflow
+
+WHAT CHANGED
+- Data folder:        %LOCALAPPDATA%\NightDownload  ->  %LOCALAPPDATA%\Shigaflow
+- Install folder:     installer default is now %LOCALAPPDATA%\Shigaflow (UsePreviousAppDir=no, so an
+                      upgrade installs fresh there instead of reusing the old folder)
+- Browser host name:  com.nightdownload.host  ->  com.shigaflow.host
+                      (extension service_worker.js, Install-BrowserIntegration.ps1, Register-NativeHost.ps1)
+- App <-> native host pipe: NightDownloadNativeHost -> ShigaflowNativeHost
+- Native host reads settings/app-path from the Shigaflow folder
+- Scripts, installer and all docs updated; no file or folder names contained the old name.
+- New Shigaflow/AppPaths.cs: one place that defines the data folder.
+
+AUTOMATIC DATA MIGRATION (first launch of this version)
+Settings, download history and torrents are COPIED from the old data folder to the new one.
+Saved .torrent file paths are rewritten to the new folder, so torrents do not depend on the old
+folder afterwards. Nothing is moved or deleted; a ".migrated" marker prevents repeating it.
+
+THE ONLY REMAINING OLD-NAME REFERENCES (intentional, migration/cleanup only)
+- Shigaflow/AppPaths.cs        : legacy folder name used as the migration source
+- NativeHost/Program.cs        : falls back to the old settings.json until the app has migrated it
+- Install-BrowserIntegration.ps1 / Register-NativeHost.ps1 : remove the old browser registration
+These can be deleted once everyone has upgraded.
+
+UPGRADE STEPS
+1. Close Shigaflow, then build/install this version (installer goes to %LOCALAPPDATA%\Shigaflow).
+2. Start Shigaflow once so it migrates your data. Check the lists show your downloads/torrents.
+3. In chrome://extensions remove the old Shigaflow extension, then Load unpacked from
+   %LOCALAPPDATA%\Shigaflow\BrowserExtension  (a new folder gives a new extension ID).
+4. Run "Connect Shigaflow to Chrome" (Start menu) and paste the new extension ID. This registers
+   com.shigaflow.host and removes the old registration. Fully restart Chrome/Edge.
+5. When everything works, you may delete the old %LOCALAPPDATA%\NightDownload folder.
+
+Not compiled/tested here (no Windows/.NET SDK or PowerShell).

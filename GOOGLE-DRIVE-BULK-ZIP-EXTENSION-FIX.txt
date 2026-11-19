@@ -1,0 +1,20 @@
+Google Drive bulk ZIP handoff fix (v6)
+
+Root cause: the Chrome extension sends googleDriveBulk=true, but the native host request DTO did not define the corresponding GoogleDriveBulk property. System.Text.Json therefore discarded the marker while forwarding the message to Shigaflow. The WPF app then received an extensionless filename and rejected it before showing its own Save As dialog.
+
+Changes:
+- Added GoogleDriveBulk to NativeHost/Program.cs NativeRequest so the marker survives the Chrome -> native host -> WPF pipe handoff.
+- Improved Drive archive detection to recognize ZIP MIME types and validate Google Drive download endpoints.
+- Kept the existing allow-list check; the bulk marker causes the app to assign the known .zip extension before validation.
+
+Install both the updated Shigaflow application/native host and the updated BrowserExtension folder. Reload the extension in chrome://extensions and restart Chrome. Replacing only the extension is not sufficient because the missing property was in the native host.
+\n\nV7 follow-up: Drive download click now arms tab-scoped capture for all Drive Download actions. The service worker no longer requires an early .zip filename/MIME/URL pattern before capturing; it classifies extensionless Drive downloads as ZIP and preserves normal extensions for named single files. Extension version 1.1.0.\n
+
+V9 regression fix: restored direct authenticated endpoint capture for single-file Google Drive downloads. Only selections detected as multiple files arm the server-generated ZIP interception path. This avoids routing single-file downloads into the bulk ZIP flow. Extension version 1.2.0.
+
+
+V10 hardening (2026-11-12):
+- Detect selected Drive items using both aria-selected/data-selected and checkbox aria-checked signals, deduplicating file IDs. This addresses Drive layouts where multi-selection is represented through checkbox state instead of aria-selected.
+- Native host now normalizes a request explicitly marked googleDriveBulk to a .zip filename before extension allow-list validation and before forwarding to the app.
+- Browser extension version bumped to 1.3.0.
+- Source-level checks are included in the release notes; a Windows build/runtime test is still required to certify the executable.

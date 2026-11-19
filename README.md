@@ -1,3 +1,6 @@
+<img width="1328" height="772" alt="image" src="https://github.com/user-attachments/assets/36a3fa0a-529b-4ed1-8f47-541b545e190a" />
+
+
 # Shigaflow — Windows download manager
 
 This ZIP contains the complete Visual Studio source for Shigaflow, including the WPF application, Chrome/Edge browser extension, Native Messaging host, and Inno Setup 6 installer definition.

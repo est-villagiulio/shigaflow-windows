@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Shigaflow</RootNamespace>
+    <AssemblyName>Shigaflow</AssemblyName>
+    <ApplicationIcon>Assets\shigaflow.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\shigaflow-logo.png" />
+    <Resource Include="Assets\klhw.png" />
+    <Resource Include="Assets\how-to.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LibtorrentSharp" Version="0.1.0-alpha" />
+  </ItemGroup>
+</Project>

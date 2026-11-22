@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shigaflow", "Shigaflow\Shigaflow.csproj", "{C4B62A70-DFD3-4F0A-A7A8-7E5B7F8A1C12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shigaflow.NativeHost", "NativeHost\Shigaflow.NativeHost.csproj", "{6D33C7F8-A66A-4A66-B3DB-8219B77A5D29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4B62A70-DFD3-4F0A-A7A8-7E5B7F8A1C12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B62A70-DFD3-4F0A-A7A8-7E5B7F8A1C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B62A70-DFD3-4F0A-A7A8-7E5B7F8A1C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B62A70-DFD3-4F0A-A7A8-7E5B7F8A1C12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D33C7F8-A66A-4A66-B3DB-8219B77A5D29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D33C7F8-A66A-4A66-B3DB-8219B77A5D29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D33C7F8-A66A-4A66-B3DB-8219B77A5D29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D33C7F8-A66A-4A66-B3DB-8219B77A5D29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

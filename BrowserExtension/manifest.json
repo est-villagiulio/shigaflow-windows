@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Shigaflow Browser Integration",
+  "version": "1.7.0",
+  "description": "Send downloads and videos to Shigaflow: intercepts download links (including authenticated Google Drive downloads) and adds a Download button on videos.",
+  "permissions": [
+    "downloads",
+    "cookies",
+    "nativeMessaging",
+    "notifications",
+    "storage",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "Shigaflow integration"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "capture_links.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "video_button.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}

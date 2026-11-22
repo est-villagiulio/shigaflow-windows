@@ -1,4 +1,7 @@
 <img width="1328" height="772" alt="image" src="https://github.com/user-attachments/assets/36a3fa0a-529b-4ed1-8f47-541b545e190a" />
+<img width="1907" height="906" alt="{1A59EDDC-01D6-40DC-84E6-DF203C4D91C3}" src="https://github.com/user-attachments/assets/dbf94f7b-6455-4d0c-852a-5ebf41f65acf" />
+<img width="1342" height="852" alt="{46CB80A5-0EFF-4842-AF31-0D4C05B4BF00}" src="https://github.com/user-attachments/assets/96b01801-2271-49d0-9a74-f622067ec29a" />
+
 
 
 # Shigaflow — Windows download manager
